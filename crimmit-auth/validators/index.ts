@@ -1,1 +1,6 @@
-export { signInUserSchema, signUpUserSchema } from "./users";
+export {
+  signInUserSchema,
+  signUpUserSchema,
+  resetPasswordSchema,
+  resetPassWordWithPassword,
+} from "./users";

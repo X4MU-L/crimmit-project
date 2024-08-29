@@ -35,9 +35,7 @@ export class ServerError extends Error {
 export const asyncHandler =
   (fn: (req: Request, res: Response, next: NextFunction) => Promise<void>) =>
   (req: Request, res: Response, next: NextFunction) => {
-    console.log("error, async");
     Promise.resolve(fn(req, res, next)).catch((err) => {
-      console.log(err, "next");
       next(err);
     });
   };
@@ -51,9 +49,7 @@ export const customAsyncHandler =
     ) => Promise<void>
   ) =>
   (req: CustomRequest<T>, res: Response, next: NextFunction) => {
-    console.log("error, async");
     Promise.resolve(fn(req, res, next)).catch((err) => {
-      console.log(err, "next");
       next(err);
     });
   };
@@ -81,11 +77,11 @@ const developmentError = (
     err = mongooseErrorHandler(err) as ServerError;
   } else if (err.name === "CastError") {
     err = castErrorHandler(err as CastError) as ServerError;
-  } else {
+  } else if (!(err instanceof ServerError)) {
     err = new ServerError(err.message, 500);
   }
 
-  res.status(err?.statusCode ?? 500).json({
+  res.status(err?.statusCode).json({
     status: err?.status,
     error: err,
     message: err?.message,
@@ -105,7 +101,7 @@ const productionError = (
     err = mongooseErrorHandler(err) as ServerError;
   } else if (err.name === "CastError") {
     err = castErrorHandler(err as CastError) as ServerError;
-  } else {
+  } else if (!(err instanceof ServerError)) {
     err = new ServerError(err.message, 500);
   }
 
