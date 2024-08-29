@@ -8,6 +8,12 @@ export interface UserType extends Document {
   createdAt: Date;
 }
 
+export interface SignInUserType {
+  token: string;
+  refreshToken: string;
+  user: UserTypeWithoutPassword;
+}
+
 export type UserTypeWithoutPassword = Omit<UserType, "password">;
 
 export const UserSchema = new Schema<UserType>({

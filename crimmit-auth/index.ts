@@ -20,7 +20,6 @@ const allowedOrigins = ["http://localhost:5009"];
 
 const corsOptions: CorsOptions = {
   origin: (origin, callback) => {
-    console.log(origin);
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
