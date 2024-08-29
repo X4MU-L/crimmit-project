@@ -10,7 +10,7 @@ export interface UserType extends Document {
 
 export type UserTypeWithoutPassword = Omit<UserType, "password">;
 
-export const userSchema = new Schema<UserType>({
+export const UserSchema = new Schema<UserType>({
   username: { type: String, required: true, unique: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
@@ -18,6 +18,6 @@ export const userSchema = new Schema<UserType>({
   updatedAt: { type: Date, default: Date.now },
 });
 
-const User: Model<UserType> = model<UserType>("User", userSchema);
+const User: Model<UserType> = model<UserType>("User", UserSchema);
 
 export default User;

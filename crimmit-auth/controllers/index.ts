@@ -1,0 +1,1 @@
+export { handleSignUpUserRoute } from "./auth";

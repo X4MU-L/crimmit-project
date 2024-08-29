@@ -3,7 +3,8 @@ import express from "express";
 import bodyParser = require("body-parser");
 import cors, { CorsOptions } from "cors";
 import { MongoConnect } from "./database";
-
+import { ServerError, globalErrorHandler } from "./utils";
+import authRoute from "./routes/auth";
 // load environment variables
 dotenv.config();
 
@@ -31,7 +32,7 @@ app.use(express.json());
 app.use(cors(corsOptions));
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
-
+app.use("/api/v1/auth", authRoute);
 app.get("/health", (req, res) => {
   res.status(200).json({
     status: true,
@@ -39,6 +40,14 @@ app.get("/health", (req, res) => {
   });
 });
 
+app.all("*", (req, res, next) => {
+  console.log("caught");
+  next(
+    new ServerError(`This path ${req.originalUrl} isn't on this server!`, 404)
+  );
+});
+
+app.use(globalErrorHandler);
 // start server
 (async () => {
   try {
