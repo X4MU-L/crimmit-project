@@ -29,18 +29,16 @@ app.all("*", (req, res, next) => {
 // global error handler
 app.use(globalErrorHandler);
 
-// Ensure dotenv config is called before any other imports
-// Ensure both connections are established before starting the server
 Promise.all([connectAuthDB(), connectTodoDB()])
   .then(() => {
     console.log("Both databases are connected successfully");
 
     // Start the server
-    app.listen(process.env.PORT, () => {
-      console.log(`Server is running on port ${process.env.PORT}`);
+    app.listen(process.env.PORT ?? 5010, () => {
+      console.log(`Server is running on port ${process.env.PORT ?? 5010}`);
     });
   })
   .catch((err) => {
     console.error("Failed to connect to databases", err);
-    process.exit(1); // Exit the process if connections fail
+    process.exit(1);
   });

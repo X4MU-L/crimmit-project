@@ -2,8 +2,8 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import { ServerError } from "../utils";
 
-const BASE_URL = process.env.AUTH_ROOT_URL_LOCAL!;
-const BASE_API = process.env.AUTH_SERVER_LOCAL!;
+const BASE_URL = process.env.AUTH_SERVER_ROOT!;
+const BASE_API = process.env.AUTH_API!;
 
 // Create Axios instances
 export const API = axios.create({
