@@ -69,12 +69,12 @@ jobs:
           docker push x4muel/crimmit-todo-server:latest
 
       - name: Install Render CLI
-        run: npm install -g render-cli
+        run: |
+          npm uninstall -g render-cli || true
+          npm install -g render-cli
 
       - name: Authenticate Render CLI
-        run: render login
-        env:
-          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+        run: echo "${{ secrets.RENDER_API_KEY }}" | render login --api-key
 
   check-and-create-auth:
     runs-on: ubuntu-latest
