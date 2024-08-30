@@ -1,0 +1,82 @@
+name: Deploy to Render
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    env: # Define environment variables once for the whole job
+      MONGODB_URL: ${{ secrets.MONGODB_URL }}
+      APP_SECRET: ${{ secrets.APP_SECRET }}
+      APP_REFRESH_TOKEN_SECRET: ${{ secrets.APP_REFRESH_TOKEN_SECRET }}
+      PASSWORD_RESET_SECRET: ${{ secrets.PASSWORD_RESET_SECRET }}
+      SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: "18"
+
+      - name: Cache dependencies
+        uses: actions/cache@v2
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build Docker images
+        run: |
+          docker build -t crimmit-auth-server ./crimmit-auth
+          docker build -t crimmit-todo-server ./crimmit-todo
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ vars.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+      - name: Push Docker images
+        run: |
+          docker tag crimmit-auth-server yourdockerhubusername/crimmit-auth-server:latest
+          docker tag crimmit-todo-server yourdockerhubusername/crimmit-todo-server:latest
+          docker push yourdockerhubusername/crimmit-auth-server:latest
+          docker push yourdockerhubusername/crimmit-todo-server:latest
+
+      - name: Install Render CLI
+        run: npm install -g @render/render-cli
+
+      - name: Authenticate Render CLI
+        run: render login
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+
+      - name: Deploy Auth Server
+        run: |
+          render deploy --service your-auth-service-id --image yourdockerhubusername/crimmit-auth-server:latest
+        id: deploy-auth
+
+      - name: Get Auth Service URL
+        id: get-auth-url
+        run: |
+          AUTH_SERVER_URL=$(render services list --service your-auth-service-id --format json | jq -r '.[0].url')
+          echo "AUTH_SERVER_URL=${AUTH_SERVER_URL}" >> $GITHUB_ENV
+        needs: deploy-auth
+
+      - name: Deploy Todo Server
+        run: |
+          render deploy --service your-todo-service-id --image yourdockerhubusername/crimmit-todo-server:latest
+        env:
+          AUTH_SERVER_ROOT: ${{ env.AUTH_SERVER_URL }}
+          AUTH_API: ${{ env.AUTH_SERVER_URL }}/api/v1
