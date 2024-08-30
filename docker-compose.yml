@@ -1,0 +1,40 @@
+version: "3.8"
+
+services:
+  crimmit-auth-server:
+    build:
+      context: ./crimmit-auth
+      dockerfile: Dockerfile
+    ports:
+      - "5009:5009"
+    env_file:
+      - ./crimmit-auth/.env
+    networks:
+      - crimmit-network
+
+  crimmit-todo-server:
+    build:
+      context: ./crimmit-todo
+      dockerfile: Dockerfile
+    ports:
+      - "5010:5010"
+    env_file:
+      - ./crimmit-todo/.env
+    networks:
+      - crimmit-network
+
+  # nginx:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "80:80"
+  #   depends_on:
+  #     - auth-server
+  #     - todo-server
+  #   networks:
+  #     - crimmit-network
+
+networks:
+  crimmit-network:
+    driver: bridge

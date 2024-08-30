@@ -1,0 +1,39 @@
+{
+  "name": "crimmit-todo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "build/app.js",
+  "scripts": {
+    "dev:todo": "NODE_ENV=development nodemon --exec ts-node app.ts",
+    "dev:auth": "NODE_ENV=developemnt cd ../crimmit-auth && npm run dev",
+    "start:todo": "NODE_ENV=production node build/server.js",
+    "start:auth": "NODE_ENV=production cd ../crimmit-auth && npm start",
+    "build:auth": "cd ../crimmit-auth && npm run build",
+    "build:todo": "tsc",
+    "build": "concurrently npm:build:*",
+    "start": "concurrently npm:start:*",
+    "dev": "concurrently npm:dev:*"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.7.5",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "joi": "^17.13.3",
+    "js-cookie": "^3.0.5",
+    "mongoose": "^8.6.0",
+    "ts-node": "^10.9.2"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/js-cookie": "^3.0.6",
+    "@types/mongoose": "^5.11.97",
+    "@types/node": "^22.5.1",
+    "concurrently": "^8.2.2",
+    "nodemon": "^3.1.4",
+    "typescript": "^5.5.4"
+  }
+}
