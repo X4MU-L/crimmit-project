@@ -1,7 +1,7 @@
 import nodemailer from "nodemailer";
 
-const gmailAppPassword = "rhue nchr xswn binu";
-const gmaiEmaillAddress = "okolisamuel21@gmail.com";
+const gmailAppPassword = process.env.NODEMAILER_API_KEY!;
+const gmaiEmaillAddress = process.env.NODEMAILER_EMAIL!;
 const NoReplyEmail = "noreply@mail";
 const smtpHost = "smtp.gmail.com";
 const smtpPort = 587;
@@ -136,10 +136,10 @@ class NodeMailer implements NodeMailerClass {
   }
 
   async sendResetLink(mailData: MailData, template: string) {
-    const PORT = process.env.PORT || 5009;
-    const link = `http://localhost:${PORT}/api/v1/auth/reset-password/${
+    const link = `${process.env.BASE_URL}/api/v1/auth/reset-password/${
       createResetToken(mailData.userId).token
     }`;
+
     const mailDetails = {
       userName: mailData.userName,
       email: mailData.email,

@@ -15,7 +15,9 @@ jobs:
       APP_REFRESH_TOKEN_SECRET: ${{ secrets.APP_REFRESH_TOKEN_SECRET }}
       PASSWORD_RESET_SECRET: ${{ secrets.PASSWORD_RESET_SECRET }}
       SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
-
+      NODEMAILER_API_KEY: ${{ secrets.NODEMAILER_API_KEY }}
+      NODEMAILER_EMAIL: ${{ secrets.NODEMAILER_EMAIL }}
+      BASE_URL: ${{ vars.AUTH_SERVER_URL }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v2
@@ -49,10 +51,10 @@ jobs:
 
       - name: Push Docker images
         run: |
-          docker tag crimmit-auth-server yourdockerhubusername/crimmit-auth-server:latest
-          docker tag crimmit-todo-server yourdockerhubusername/crimmit-todo-server:latest
-          docker push yourdockerhubusername/crimmit-auth-server:latest
-          docker push yourdockerhubusername/crimmit-todo-server:latest
+          docker tag crimmit-auth-server x4muel/crimmit-auth-server:latest
+          docker tag crimmit-todo-server x4muel/crimmit-todo-server:latest
+          docker push x4muel/crimmit-auth-server:latest
+          docker push x4muel/crimmit-todo-server:latest
 
       - name: Install Render CLI
         run: npm install -g @render/render-cli
@@ -62,21 +64,72 @@ jobs:
         env:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
 
+      - name: Check and Create Auth Server
+        id: check-create-auth
+        run: |
+          AUTH_SERVICE=$(render services list --format json | jq -r '.[] | select(.serviceName=="crimmit-auth-server") | .serviceId')
+          if [ -z "$AUTH_SERVICE" ]; then
+            echo "Auth service does not exist. Creating..."
+            RESPONSE=$(curl -X POST \
+              -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
+              -H "Content-Type: application/json" \
+              -d '{
+                "serviceName": "crimmit-auth-server",
+                "type": "web_service",
+                "env": "docker",
+                "region": "oregon",
+                "dockerfilePath": "./crimmit-auth/Dockerfile",
+                "branch": "main",
+                "repo": "https://github.com/x4mu-l/crimmit-project"
+              }' https://api.render.com/v1/services)
+            AUTH_SERVICE=$(echo $RESPONSE | jq -r '.service.id')
+          fi
+          echo "AUTH_SERVICE_ID=$AUTH_SERVICE" >> $GITHUB_ENV
+
       - name: Deploy Auth Server
         run: |
-          render deploy --service your-auth-service-id --image yourdockerhubusername/crimmit-auth-server:latest
+          render deploy --service  ${{ env.AUTH_SERVICE_ID }}  --image x4muel/crimmit-auth-server:latest
+        env:
+          PORT: ${{ vars.AUTH_PORT }}
         id: deploy-auth
+        needs: check-create-auth
 
       - name: Get Auth Service URL
         id: get-auth-url
         run: |
-          AUTH_SERVER_URL=$(render services list --service your-auth-service-id --format json | jq -r '.[0].url')
+          AUTH_SERVER_URL=$(render services list --service ${{ env.AUTH_SERVICE_ID }} --format json | jq -r '.[0].url')
           echo "AUTH_SERVER_URL=${AUTH_SERVER_URL}" >> $GITHUB_ENV
         needs: deploy-auth
 
+      - name: Check and Create Todo Server
+        id: check-create-todo
+        run: |
+          TODO_SERVICE=$(render services list --format json | jq -r '.[] | select(.serviceName=="crimmit-todo-server") | .serviceId')
+          if [ -z "$TODO_SERVICE" ]; then
+            echo "Todo service does not exist. Creating..."
+            RESPONSE=$(curl -X POST \
+              -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
+              -H "Content-Type: application/json" \
+              -d '{
+                "serviceName": "crimmit-todo-server",
+                "type": "web_service",
+                "env": "docker",
+                "region": "oregon",
+                "dockerfilePath": "./crimmit-todo/Dockerfile",
+                "branch": "main",
+                "repo": "https://github.com/x4mu-l/crimmit-project"
+              }' https://api.render.com/v1/services)
+            TODO_SERVICE=$(echo $RESPONSE | jq -r '.service.id')
+          fi
+          echo "TODO_SERVICE_ID=$TODO_SERVICE" >> $GITHUB_ENV
+
       - name: Deploy Todo Server
         run: |
-          render deploy --service your-todo-service-id --image yourdockerhubusername/crimmit-todo-server:latest
+          render deploy --service ${{ env.TODO_SERVICE_ID }}  --image x4muel/crimmit-todo-server:latest
         env:
+          PORT: ${{ vars.TODO_PORT }}
           AUTH_SERVER_ROOT: ${{ env.AUTH_SERVER_URL }}
           AUTH_API: ${{ env.AUTH_SERVER_URL }}/api/v1
+        needs:
+          - get-auth-url
+          - check-create-todo
