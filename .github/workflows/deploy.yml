@@ -28,15 +28,28 @@ jobs:
         with:
           node-version: "18"
 
-      - name: Cache dependencies
+      - name: Cache dependencies for Auth Server
         uses: actions/cache@v3
         with:
           path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          key: ${{ runner.os }}-node-${{ hashFiles('crimmit-auth/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
 
-      - name: Install dependencies
+      - name: Install dependencies for Auth Server
+        working-directory: ./crimmit-auth
+        run: npm install
+
+      - name: Cache dependencies for Todo Server
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('crimmit-todo/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies for Todo Server
+        working-directory: ./crimmit-todo
         run: npm install
 
       - name: Build Docker images
