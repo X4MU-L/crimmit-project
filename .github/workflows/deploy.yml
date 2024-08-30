@@ -54,8 +54,8 @@ jobs:
 
       - name: Build Docker images
         run: |
-          docker build -t x4muel/crimmit-auth-server:latest ./crimmit-auth
-          docker build -t x4muel/crimmit-todo-server:latest ./crimmit-todo
+          docker build -t x4muel/crimmit-auth-server:latest -f crimmit-auth/Dockerfile ./crimmit-auth
+          docker build -t x4muel/crimmit-todo-server:latest -f crimmit-todo/Dockerfile ./crimmit-todo
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v1
