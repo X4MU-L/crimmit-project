@@ -5,5 +5,5 @@ COPY package*.json ./
 RUN npm install
 COPY . .
 EXPOSE 5009
-# Command to run the app
+# Command to run the app 
 CMD ["npm", "run", "dev"]
