@@ -69,7 +69,7 @@ jobs:
           docker push x4muel/crimmit-todo-server:latest
 
       - name: Install Render CLI
-        run: npm install -g @render/render-cli
+        run: npm install -g render-cli
 
       - name: Authenticate Render CLI
         run: render login
