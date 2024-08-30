@@ -68,14 +68,6 @@ jobs:
           docker push x4muel/crimmit-auth-server:latest
           docker push x4muel/crimmit-todo-server:latest
 
-      - name: Install Render CLI
-        run: |
-          npm uninstall -g render-cli || true
-          npm install -g render-cli
-
-      - name: Authenticate Render CLI
-        run: echo "${{ secrets.RENDER_API_KEY }}" | render login --api-key
-
   check-and-create-auth:
     runs-on: ubuntu-latest
     needs: build-and-deploy
@@ -107,10 +99,21 @@ jobs:
     needs: check-and-create-auth
     steps:
       - name: Deploy Auth Server
-        run: |
-          render deploy --service ${{ env.AUTH_SERVICE_ID }} --image x4muel/crimmit-auth-server:latest
+        uses: johnbeynon/render-deploy-action@v0.0.8
+        with:
+          service-id: ${{ env.AUTH_SERVICE_ID }}
+          api-key: ${{ secrets.RENDER_API_KEY }}
+          wait-for-success: true
         env:
-          PORT: ${{ secrets.PORT }}
+          MONGODB_URL: ${{ secrets.MONGODB_URL }}
+          APP_SECRET: ${{ secrets.APP_SECRET }}
+          APP_REFRESH_TOKEN_SECRET: ${{ secrets.APP_REFRESH_TOKEN_SECRET }}
+          PASSWORD_RESET_SECRET: ${{ secrets.PASSWORD_RESET_SECRET }}
+          SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
+          NODEMAILER_API_KEY: ${{ secrets.NODEMAILER_API_KEY }}
+          NODEMAILER_EMAIL: ${{ secrets.NODEMAILER_EMAIL }}
+          BASE_URL: ${{ vars.BASE_URL }}
+          PORT: ${{ vars.AUTH_PORT }}
 
   get-auth-url:
     runs-on: ubuntu-latest
@@ -153,9 +156,18 @@ jobs:
     needs: check-and-create-todo
     steps:
       - name: Deploy Todo Server
-        run: |
-          render deploy --service ${{ env.TODO_SERVICE_ID }} --image x4muel/crimmit-todo-server:latest
+        uses: johnbeynon/render-deploy-action@v0.0.8
+        with:
+          service-id: ${{ env.TODO_SERVICE_ID }}
+          api-key: ${{ secrets.RENDER_API_KEY }}
+          wait-for-success: true
         env:
-          PORT: ${{ secrets.PORT }}
+          PORT: ${{ vars.TODO_PORT }}
           AUTH_SERVER_ROOT: ${{ env.AUTH_SERVER_URL }}
           AUTH_API: ${{ env.AUTH_SERVER_URL }}/api/v1
+          MONGODB_URL: ${{ secrets.MONGODB_URL }}
+          APP_SECRET: ${{ secrets.APP_SECRET }}
+          APP_REFRESH_TOKEN_SECRET: ${{ secrets.APP_REFRESH_TOKEN_SECRET }}
+          PASSWORD_RESET_SECRET: ${{ secrets.PASSWORD_RESET_SECRET }}
+          SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
+          NODEMAILER_API_KEY: ${{ secrets.NODEMAILER_API_KEY }}
