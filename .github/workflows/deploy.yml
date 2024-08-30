@@ -52,10 +52,15 @@ jobs:
         working-directory: ./crimmit-todo
         run: npm install
 
-      - name: Build Docker images
+      - name: Build Docker Todo image
+        working-directory: ./crimmit-todo
         run: |
-          docker build -t x4muel/crimmit-auth-server:latest -f crimmit-auth/Dockerfile ./crimmit-auth
-          docker build -t x4muel/crimmit-todo-server:latest -f crimmit-todo/Dockerfile ./crimmit-todo
+          docker build -t x4muel/crimmit-todo-server:latest .
+
+      - name: Build Docker Auth image
+        working-directory: ./crimmit-auth
+        run: |
+          docker build -t x4muel/crimmit-auth-server:latest .
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v1
