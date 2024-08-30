@@ -22,6 +22,7 @@ async function createNewUser(
     const userObject = user.toObject();
     return { user: _.omit(userObject, ["password"]) };
   } catch (error) {
+    console.log("errored", error);
     if (error instanceof MongoServerError && error.code === 11000) {
       const field = Object.keys(error.errorResponse.keyPattern)[0];
       if (field === "email") {

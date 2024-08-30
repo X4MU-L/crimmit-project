@@ -16,6 +16,7 @@ import {
   handlePasswordRoute,
   handleRefreshTokenRoute,
   handleSignOut,
+  verifyToken
 } from "../controllers";
 
 router.post("/signup", asyncHandler(handleSignUpUserRoute));
@@ -26,7 +27,11 @@ router.post(
   customAsyncHandler(authHandler),
   customAsyncHandler(resetPasswordRoute)
 );
-
+router.post(
+  "/verify-token",
+  customAsyncHandler(authHandler),
+  customAsyncHandler(verifyToken)
+);
 router
   .route("/reset-password/:token")
   .get(

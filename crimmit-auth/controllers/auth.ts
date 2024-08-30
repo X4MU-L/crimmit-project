@@ -57,9 +57,13 @@ async function handleSignInRoute(
     sameSite: "none",
     secure: true,
   });
-  res
-    .status(201)
-    .send({ user, token, success: true, message: "successfully signed in" });
+  res.status(201).send({
+    user,
+    refreshToken,
+    token,
+    success: true,
+    message: "successfully signed in",
+  });
 }
 
 // handle password reset email, unprotected route
@@ -169,6 +173,20 @@ async function handleSignOut(req: Request, res: Response) {
     secure: true,
   });
 }
+
+async function verifyToken(req: CustomRequest, res: Response) {
+  const { user } = req;
+  try {
+    await getUserById(user?.userId ?? null);
+  } catch (err) {
+    throw new ServerError("Forbidden", 403);
+  }
+  res.status(200).json({
+    success: true,
+    message: "user verified successfully",
+    user,
+  });
+}
 export {
   handleSignUpUserRoute,
   handleSignInRoute,
@@ -177,4 +195,5 @@ export {
   handlePasswordRoute,
   handleRefreshTokenRoute,
   handleSignOut,
+  verifyToken,
 };

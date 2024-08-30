@@ -96,7 +96,7 @@ function verifyJWTToken(token: string, refresh = false) {
   try {
     const secret = refresh
       ? process.env.APP_REFRESH_TOKEN_SECRET!
-      : process.env.APP_TOKEN_SECRET!;
+      : process.env.APP_SECRET!;
     const decoded = jwt.verify(token, secret);
     return decoded as UIDObject;
   } catch (error: unknown) {

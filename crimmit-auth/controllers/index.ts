@@ -6,4 +6,5 @@ export {
   handlePasswordRoute,
   handleRefreshTokenRoute,
   handleSignOut,
+  verifyToken,
 } from "./auth";
